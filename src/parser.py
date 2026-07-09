@@ -19,7 +19,7 @@ class Parser:
     def __init__(self, authenticated_driver: WebDriver):
         self.driver = authenticated_driver
 
-   def get_accommodations(self, search_url: str) -> SearchResults:
+    def get_accommodations(self, search_url: str) -> SearchResults:
         self.driver.get(search_url)
         
         # --- BLOC DE DEBUG CORRIGÉ ---
