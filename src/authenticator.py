@@ -7,72 +7,84 @@ from time import sleep
 from src.settings import Settings
 
 settings = Settings()
-
 logger = logging.getLogger(__name__)
-
 
 class Authenticator:
     """Class that handles the authentication to the CROUS website and returns a WebDriver object that is authenticated."""
 
-    def __init__(self, email: str, password: str, delay: int = 2):
+    def __init__(self, email: str, password: str, delay: int = 4):
         self.email = email
         self.password = password
-        self.delay = delay
+        self.delay = delay # On donne quelques secondes au bot pour ne pas brusquer la page
 
     def authenticate_driver(self, driver: WebDriver) -> None:
-        """Authenticates the given WebDriver object to the CROUS website."""
-
         logger.info("Authenticating to the CROUS website...")
-
         sleep(self.delay)
 
-        # Step 1: Go to the login page
-
-        logger.info(f"Going to the login page: {settings.MSE_LOGIN_URL}")
-        driver.get(settings.MSE_LOGIN_URL)
+        # Étape 1 : On va directement sur la page de connexion officielle des logements
+        logger.info("Going to the login gateway...")
+        driver.get("https://trouverunlogement.lescrous.fr/mse/discovery/connect")
         sleep(self.delay)
 
-        # Step 2: choose the correct authentication method
-        logger.info("Choosing the correct authentication method")
-        mse_connect_button = driver.find_element(By.CLASS_NAME, "loginapp-button")
-        # mse_connect_button.click() # somehow doesn't work. We simulate a click instead :
-        driver.execute_script("arguments[0].click();", mse_connect_button)
-        sleep(self.delay)
+        # Étape 2 : On essaie de cliquer sur les vieux boutons (s'ils existent encore)
+        try:
+            logger.info("Checking for intermediate buttons...")
+            mse_connect_button = driver.find_element(By.CLASS_NAME, "loginapp-button")
+            driver.execute_script("arguments[0].click();", mse_connect_button)
+            sleep(self.delay)
+        except:
+            pass # Si le bouton n'existe plus, on ignore l'erreur
+            
+        try:
+            connexion_btn = driver.find_element(By.PARTIAL_LINK_TEXT, "Connexion")
+            driver.execute_script("arguments[0].click();", connexion_btn)
+            sleep(self.delay)
+        except:
+            pass
 
-        # Step 3: Input credentials and submit
+        # Étape 3 : On remplit le formulaire de connexion
         logger.info("Inputting credentials")
-        username_input = driver.find_element(By.NAME, "j_username")
-        password_input = driver.find_element(By.NAME, "j_password")
+        
+        # Le site utilise parfois de nouveaux noms pour les cases, on teste les deux versions
+        try:
+            username_input = driver.find_element(By.NAME, "username")
+        except:
+            username_input = driver.find_element(By.NAME, "j_username")
+            
+        try:
+            password_input = driver.find_element(By.NAME, "password")
+        except:
+            password_input = driver.find_element(By.NAME, "j_password")
 
         username_input.send_keys(self.email)
         password_input.send_keys(self.password)
 
         logger.info("Submitting the form")
         password_input.send_keys(Keys.RETURN)
-
         sleep(self.delay)
 
-        # Step 4: Validate the rules
-        self._validate_rules(driver)
+        # Étape 4 : Validation du règlement (avec sécurité pour ne pas planter)
+        try:
+            self._validate_rules(driver)
+        except:
+            pass
 
-        # Step 5: Force update the auth status
+        # Étape 5 : On force la validation
         driver.get("https://trouverunlogement.lescrous.fr/mse/discovery/connect")
+        sleep(self.delay)
 
-        # Done
         logger.info("Successfully authenticated to the CROUS website")
 
     def _validate_rules(self, driver: WebDriver) -> None:
-        """Validates the rules of the CROUS website."""
         logger.info("Validating the rules of the CROUS website")
-
         driver.get("https://trouverunlogement.lescrous.fr/tools/36/rules")
-
         sleep(self.delay)
+        
+        try:
+            validate_button = driver.find_element(By.NAME, "searchSubmit")
+            validate_button.click()
+            sleep(self.delay)
+        except:
+            pass
 
-        # <button class="fr-btn" type="submit" name="searchSubmit">Passer à la recherche de logements</button>
 
-        validate_button = driver.find_element(By.NAME, "searchSubmit")
-
-        validate_button.click()
-
-        sleep(self.delay)
