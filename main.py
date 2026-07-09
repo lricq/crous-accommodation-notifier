@@ -91,7 +91,17 @@ if __name__ == "__main__":
     user_confs = load_users_conf()
 
     driver = create_driver(headless=not args.no_headless)
-    Authenticator(settings.MSE_EMAIL, settings.MSE_PASSWORD).authenticate_driver(driver)
+    
+    # --- ON AJOUTE NOTRE DÉTECTEUR ICI ---
+    try:
+        Authenticator(settings.MSE_EMAIL, settings.MSE_PASSWORD).authenticate_driver(driver)
+    except Exception as erreur:
+        logging.error("🚨 LE BOT EST BLOQUÉ ! Voici ce qu'il voit à l'écran :")
+        logging.error(f"L'adresse de la page : {driver.current_url}")
+        logging.error(f"Le titre de la page : {driver.title}")
+        driver.quit()
+        raise erreur
+    # -------------------------------------
 
     parser = Parser(driver)
     notification_builder = NotificationBuilder()
@@ -105,3 +115,4 @@ if __name__ == "__main__":
             notifier.send_notification(conf.telegram_id, notification)
 
     driver.quit()
+
