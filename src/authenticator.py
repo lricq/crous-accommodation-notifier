@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 class Authenticator:
     """Class that handles the authentication to the CROUS website."""
 
-    def __init__(self, email: str, password: str, delay: int = 4):
+    def __init__(self, email: str, password: str, delay: int = 5):
         self.email = email
         self.password = password
-        self.delay = delay 
+        self.delay = delay # J'ai augmenté d'une petite seconde pour être sûr que la page charge bien
 
     def authenticate_driver(self, driver: WebDriver) -> None:
         logger.info("Authenticating to the CROUS website...")
@@ -25,35 +25,26 @@ class Authenticator:
         driver.get("https://trouverunlogement.lescrous.fr/mse/discovery/connect")
         sleep(self.delay)
 
-        # --- NOUVELLE ÉTAPE : LE PASSAGE DE L'AIGUILLAGE ---
-        logger.info("Recherche du bouton d'aiguillage (Dispatcher)...")
-        
-        # 1. On tente de cliquer sur les textes les plus courants du nouveau site
-        mots_cles = ["MesServices", "S'identifier", "Connexion", "Se connecter", "etudiant.gouv"]
-        for mot in mots_cles:
-            try:
-                bouton = driver.find_element(By.PARTIAL_LINK_TEXT, mot)
-                driver.execute_script("arguments[0].click();", bouton)
-                sleep(self.delay)
-                logger.info(f"Bouton contenant '{mot}' trouvé et cliqué !")
-                break # Le clic a marché, on sort de la boucle
-            except:
-                pass
-
-        # 2. On tente avec les noms de code techniques au cas où
+        logger.info("Recherche du vrai bouton d'aiguillage...")
         try:
-            bouton_tech = driver.find_element(By.CSS_SELECTOR, ".loginapp-button, #idp-mse, button[value='mse'], a.fr-btn")
-            driver.execute_script("arguments[0].click();", bouton_tech)
-            sleep(self.delay)
+            # On cible UNIQUEMENT les vrais boutons de l'État (fr-btn) ou l'identifiant technique MSE
+            boutons = driver.find_elements(By.CSS_SELECTOR, "a.fr-btn, button.fr-btn, #idp-mse, button.loginapp-button")
+            for btn in boutons:
+                # On vérifie que ce n'est pas le bouton FranceConnect
+                if "franceconnect" not in btn.get_attribute("class").lower():
+                    driver.execute_script("arguments[0].click();", btn)
+                    logger.info("Vrai bouton cliqué !")
+                    sleep(self.delay)
+                    break
         except:
             pass
-        # ---------------------------------------------------
 
         logger.info("Inputting credentials")
         
         try:
-            username_input = driver.find_element(By.CSS_SELECTOR, "input[type='email'], input[type='text']")
-            password_input = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
+            # On cherche les cases avec une méthode ultra-large et robuste
+            username_input = driver.find_element(By.CSS_SELECTOR, "input[name*='username'], input[id*='username'], input[type='email']")
+            password_input = driver.find_element(By.CSS_SELECTOR, "input[name*='password'], input[id*='password'], input[type='password']")
 
             username_input.send_keys(self.email)
             password_input.send_keys(self.password)
@@ -62,7 +53,7 @@ class Authenticator:
             password_input.send_keys(Keys.RETURN)
             sleep(self.delay)
         except Exception as e:
-            logger.error("Échec : Le bot n'a pas réussi à passer l'aiguillage.")
+            logger.error("Échec : Le bot ne trouve pas les cases.")
             raise e
 
         try:
