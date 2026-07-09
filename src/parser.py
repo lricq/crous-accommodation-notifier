@@ -23,7 +23,7 @@ class Parser:
         self.driver.get(str(search_url))
         
         # --- BLOC DE DEBUG CORRIGÉ ---
-        sleep(10) 
+        sleep(20) 
         html_contenu = self.driver.page_source
         logger.info(f"--- CONTENU DE LA PAGE DE RÉSULTATS (tronqué) ---")
         logger.info(html_contenu[:5000])
