@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from time import sleep
 
-# Les deux nouveaux outils pour le CAPTCHA
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -32,18 +31,15 @@ class Authenticator:
         logger.info("Vérification de l'aiguillage...")
         url_avant_clic = driver.current_url
         
+        # --- LA FRAPPE CHIRURGICALE EST ICI ---
         try:
-            liens = driver.find_elements(By.TAG_NAME, "a") + driver.find_elements(By.TAG_NAME, "button")
-            for lien in liens:
-                texte = lien.text.lower()
-                href = lien.get_attribute("href") or ""
-                if "connexion" in texte or "oauth2/login" in href:
-                    if "courriel" not in href and "logo" not in lien.get_attribute("class").lower():
-                        driver.execute_script("arguments[0].click();", lien)
-                        logger.info(f"Bouton d'aiguillage cliqué ! (Texte: '{texte}')")
-                        break
-        except:
-            pass
+            # On cible directement le nom de code du bouton blanc de ta capture 2
+            dispatcher_btn = driver.find_element(By.NAME, "login[app]")
+            driver.execute_script("arguments[0].click();", dispatcher_btn)
+            logger.info("Bouton 'S'identifier avec MesServices' cliqué !")
+        except Exception as e:
+            logger.warning(f"Impossible de cliquer sur l'aiguillage : {e}")
+        # --------------------------------------
 
         logger.info("Attente de la redirection vers le formulaire...")
         for _ in range(15): 
@@ -77,16 +73,12 @@ class Authenticator:
                         password_input = inp
 
             if not username_input or not password_input:
-                logger.error("Détails des cases trouvées :")
-                for inp in tous_les_inputs:
-                    logger.error(f"-> Type: '{inp.get_attribute('type')}', Nom: '{inp.get_attribute('name')}'")
                 raise Exception("Cases introuvables sur la page de destination.")
 
             logger.info("Cases trouvées ! Remplissage en cours...")
             username_input.send_keys(self.email)
             password_input.send_keys(self.password)
 
-            # --- LE FAMEUX COUP DE POKER POUR LE CAPTCHA ---
             logger.info("Tentative d'approche du videur (CAPTCHA)...")
             try:
                 WebDriverWait(driver, 5).until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[title*='reCAPTCHA']")))
@@ -98,7 +90,6 @@ class Authenticator:
             except Exception as e:
                 logger.warning("Le bot n'a pas pu cliquer sur le CAPTCHA (il n'y en a peut-être pas ou il est bloqué).")
                 driver.switch_to.default_content()
-            # -----------------------------------------------
 
             logger.info("Validation du formulaire...")
             try:
