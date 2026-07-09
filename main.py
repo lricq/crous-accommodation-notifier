@@ -92,8 +92,7 @@ if __name__ == "__main__":
 
     driver = create_driver(headless=not args.no_headless)
     
-    # --- ON AJOUTE NOTRE DÉTECTEUR ICI ---
-   # --- ON MET À JOUR LE DÉTECTEUR POUR LIRE LE TEXTE ---
+    # --- ON AJOUTE NOTRE DÉTECTEUR INFAILLIBLE ICI ---
     try:
         Authenticator(settings.MSE_EMAIL, settings.MSE_PASSWORD).authenticate_driver(driver)
     except Exception as erreur:
@@ -101,20 +100,16 @@ if __name__ == "__main__":
         logging.error(f"L'adresse de la page : {driver.current_url}")
         logging.error(f"Le titre de la page : {driver.title}")
         
-        # On demande au bot de lire tout le texte de la page
+        # On demande au bot de nous cracher le code source (ça ne plante jamais !)
         try:
-            texte_page = driver.find_element(By.TAG_NAME, "body").text
-            logging.error(f"--- TEXTE DE LA PAGE ---\n{texte_page}\n------------------------")
+            html = driver.page_source
+            logging.error(f"--- CODE HTML DE LA PAGE ---\n{html[:4000]}\n------------------------")
         except:
-            logging.error("Impossible de lire le texte.")
+            logging.error("Impossible de lire le code HTML.")
             
         driver.quit()
         raise erreur
-    # -----------------------------------------------------
-
-    parser = Parser(driver)
-    # (Laisse la fin du fichier avec notification_builder, etc. exactement comme avant)
-    # -------------------------------------
+    # -------------------------------------------------
 
     parser = Parser(driver)
     notification_builder = NotificationBuilder()
@@ -128,4 +123,3 @@ if __name__ == "__main__":
             notifier.send_notification(conf.telegram_id, notification)
 
     driver.quit()
-
