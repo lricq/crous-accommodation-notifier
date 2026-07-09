@@ -93,14 +93,27 @@ if __name__ == "__main__":
     driver = create_driver(headless=not args.no_headless)
     
     # --- ON AJOUTE NOTRE DÉTECTEUR ICI ---
+   # --- ON MET À JOUR LE DÉTECTEUR POUR LIRE LE TEXTE ---
     try:
         Authenticator(settings.MSE_EMAIL, settings.MSE_PASSWORD).authenticate_driver(driver)
     except Exception as erreur:
         logging.error("🚨 LE BOT EST BLOQUÉ ! Voici ce qu'il voit à l'écran :")
         logging.error(f"L'adresse de la page : {driver.current_url}")
         logging.error(f"Le titre de la page : {driver.title}")
+        
+        # On demande au bot de lire tout le texte de la page
+        try:
+            texte_page = driver.find_element(By.TAG_NAME, "body").text
+            logging.error(f"--- TEXTE DE LA PAGE ---\n{texte_page}\n------------------------")
+        except:
+            logging.error("Impossible de lire le texte.")
+            
         driver.quit()
         raise erreur
+    # -----------------------------------------------------
+
+    parser = Parser(driver)
+    # (Laisse la fin du fichier avec notification_builder, etc. exactement comme avant)
     # -------------------------------------
 
     parser = Parser(driver)
