@@ -28,7 +28,7 @@ sleep(10) # On laisse le temps aux logements de s'afficher
 html_contenu = driver.page_source
 logger.info(f"--- CONTENU DE LA PAGE DE RÉSULTATS (tronqué) ---")
 logger.info(html_contenu[:5000]) # On affiche les 5000 premiers caractères
-        sleep(2)
+sleep(2)
         html = self.driver.page_source
         search_results_soup = BeautifulSoup(html, "html.parser")
         num_accommodations = self._get_accomodations_count(search_results_soup)
