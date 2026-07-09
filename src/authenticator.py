@@ -15,25 +15,23 @@ class Authenticator:
     def __init__(self, email: str, password: str, delay: int = 4):
         self.email = email
         self.password = password
-        self.delay = delay # On donne quelques secondes au bot pour ne pas brusquer la page
+        self.delay = delay 
 
     def authenticate_driver(self, driver: WebDriver) -> None:
         logger.info("Authenticating to the CROUS website...")
         sleep(self.delay)
 
-        # Étape 1 : On va directement sur la page de connexion officielle des logements
         logger.info("Going to the login gateway...")
         driver.get("https://trouverunlogement.lescrous.fr/mse/discovery/connect")
         sleep(self.delay)
 
-        # Étape 2 : On essaie de cliquer sur les vieux boutons (s'ils existent encore)
         try:
             logger.info("Checking for intermediate buttons...")
             mse_connect_button = driver.find_element(By.CLASS_NAME, "loginapp-button")
             driver.execute_script("arguments[0].click();", mse_connect_button)
             sleep(self.delay)
         except:
-            pass # Si le bouton n'existe plus, on ignore l'erreur
+            pass 
             
         try:
             connexion_btn = driver.find_element(By.PARTIAL_LINK_TEXT, "Connexion")
@@ -42,19 +40,12 @@ class Authenticator:
         except:
             pass
 
-        # Étape 3 : On remplit le formulaire de connexion
+        # --- LA MODIFICATION EST ICI ---
         logger.info("Inputting credentials")
         
-        # Le site utilise parfois de nouveaux noms pour les cases, on teste les deux versions
-        try:
-            username_input = driver.find_element(By.NAME, "username")
-        except:
-            username_input = driver.find_element(By.NAME, "j_username")
-            
-        try:
-            password_input = driver.find_element(By.NAME, "password")
-        except:
-            password_input = driver.find_element(By.NAME, "j_password")
+        # On cherche les cases par leur type (email, text, password) et non plus par leur nom
+        username_input = driver.find_element(By.CSS_SELECTOR, "input[type='email'], input[type='text']")
+        password_input = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
 
         username_input.send_keys(self.email)
         password_input.send_keys(self.password)
@@ -62,14 +53,13 @@ class Authenticator:
         logger.info("Submitting the form")
         password_input.send_keys(Keys.RETURN)
         sleep(self.delay)
+        # -------------------------------
 
-        # Étape 4 : Validation du règlement (avec sécurité pour ne pas planter)
         try:
             self._validate_rules(driver)
         except:
             pass
 
-        # Étape 5 : On force la validation
         driver.get("https://trouverunlogement.lescrous.fr/mse/discovery/connect")
         sleep(self.delay)
 
@@ -86,5 +76,4 @@ class Authenticator:
             sleep(self.delay)
         except:
             pass
-
 
