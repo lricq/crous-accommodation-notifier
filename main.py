@@ -28,7 +28,7 @@ def load_users_conf() -> List[UserConf]:
         UserConf(
             conf_title="Stras",
             telegram_id=settings.MY_TELEGRAM_ID,
-            search_url="https://trouverunlogement.lescrous.fr/tools/47/search?minArea=13&occupationModes=alone&bounds=7.744174918598899_48.585802584562714_7.791038474507103_48.55916724786469&locationName=Strasbourg", 
+            search_url="https://trouverunlogement.lescrous.fr/tools/47/search?maxPrice=50000&occupationModes=alone&bounds=7.745103836059571_48.58881489147136_7.791967391967774_48.56218114207007&locationName=Strasbourg", 
             ignored_ids=[],
         ), # <--- CETTE VIRGULE EST TRÈS IMPORTANTE !
         
