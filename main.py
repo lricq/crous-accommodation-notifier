@@ -55,11 +55,19 @@ def create_driver(headless: bool = True) -> WebDriver:
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
 
-    # Initialize the WebDriver with the configured options (Selenium gère le driver tout seul maintenant)
+    # --- LE FAMEUX DÉGUISEMENT ---
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option("useAutomationExtension", False)
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
+    # -----------------------------
+
+    # Initialize the WebDriver
     driver = webdriver.Chrome(options=chrome_options)
     
     # LIGNE À RAJOUTER : On dit au bot d'attendre jusqu'à 10 secondes si la page est lente
     driver.implicitly_wait(10)
+    
     return driver
     
 
