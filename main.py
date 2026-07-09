@@ -36,7 +36,7 @@ def load_users_conf() -> List[UserConf]:
         UserConf(
             conf_title="Lyon 2",
             telegram_id=settings.MY_TELEGRAM_ID,
-            search_url="https://trouverunlogement.lescrous.fr/tools/47/search?minArea=13&occupationModes=alone&bounds=4.8146444960895804_45.75230931119491_4.861508051997784_45.72421413441327&locationName=Lyon", 
+            search_url="https://trouverunlogement.lescrous.fr/tools/47/search?minArea=10&occupationModes=alone&bounds=4.816989123583336_45.7528507798946_4.863852679491539_45.72475587562574&locationName=Lyon", 
             ignored_ids=[],
         )
     ]
