@@ -20,7 +20,7 @@ class Parser:
         self.driver = authenticated_driver
 
     def get_accommodations(self, search_url: str) -> SearchResults:
-        self.driver.get(search_url)
+        self.driver.get(str(search_url))
         
         # --- BLOC DE DEBUG CORRIGÉ ---
         sleep(10) 
