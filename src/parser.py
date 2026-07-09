@@ -19,16 +19,16 @@ class Parser:
     def __init__(self, authenticated_driver: WebDriver):
         self.driver = authenticated_driver
 
-    def get_accommodations(self, search_url: HttpUrl) -> SearchResults:
-        """Returns the accommodations found on the CROUS website for the given search URL"""
-        logger.info(f"Getting accommodations from the search URL: {search_url}")
-        self.driver.get(str(search_url))
-        # Juste après driver.get(search_url)
-sleep(10) # On laisse le temps aux logements de s'afficher
-html_contenu = driver.page_source
-logger.info(f"--- CONTENU DE LA PAGE DE RÉSULTATS (tronqué) ---")
-logger.info(html_contenu[:5000]) # On affiche les 5000 premiers caractères
-sleep(2)
+   def get_accommodations(self, search_url: str) -> SearchResults:
+        self.driver.get(search_url)
+        
+        # --- BLOC DE DEBUG CORRIGÉ ---
+        sleep(10) 
+        html_contenu = self.driver.page_source
+        logger.info(f"--- CONTENU DE LA PAGE DE RÉSULTATS (tronqué) ---")
+        logger.info(html_contenu[:5000])
+        # -----------------------------
+
         html = self.driver.page_source
         search_results_soup = BeautifulSoup(html, "html.parser")
         num_accommodations = self._get_accomodations_count(search_results_soup)
