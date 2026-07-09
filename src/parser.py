@@ -23,6 +23,11 @@ class Parser:
         """Returns the accommodations found on the CROUS website for the given search URL"""
         logger.info(f"Getting accommodations from the search URL: {search_url}")
         self.driver.get(str(search_url))
+        # Juste après driver.get(search_url)
+sleep(10) # On laisse le temps aux logements de s'afficher
+html_contenu = driver.page_source
+logger.info(f"--- CONTENU DE LA PAGE DE RÉSULTATS (tronqué) ---")
+logger.info(html_contenu[:5000]) # On affiche les 5000 premiers caractères
         sleep(2)
         html = self.driver.page_source
         search_results_soup = BeautifulSoup(html, "html.parser")
