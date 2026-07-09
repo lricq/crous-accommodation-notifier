@@ -5,9 +5,7 @@ from typing import List
 import telepot
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service as ChromiumService
 from selenium.webdriver.chrome.webdriver import WebDriver
-from chromedriver_py import binary_path  # this will get you the path variable
 
 from src.authenticator import Authenticator
 from src.parser import Parser
@@ -49,13 +47,8 @@ def create_driver(headless: bool = True) -> WebDriver:
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
 
-    # Initialize the WebDriver with the configured options
-    return webdriver.Chrome(
-        options=chrome_options,
-        service=ChromiumService(
-            executable_path=binary_path,
-        ),
-    )
+    # Initialize the WebDriver with the configured options (Selenium gère le driver tout seul maintenant)
+    return webdriver.Chrome(options=chrome_options)
 
 
 if __name__ == "__main__":
