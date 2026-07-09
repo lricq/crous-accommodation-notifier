@@ -24,12 +24,20 @@ logger = logging.getLogger("accommodation_notifier")
 
 def load_users_conf() -> List[UserConf]:
     return [
+        # --- Strasbourg ---
         UserConf(
-            conf_title="Me",
+            conf_title="Stras",
             telegram_id=settings.MY_TELEGRAM_ID,
-            search_url="https://trouverunlogement.lescrous.fr/tools/36/search?bounds=4.863088128353419_45.79119771932692_4.887077805782618_45.764140033383086",  # type:ignore
-            # search_url="https://trouverunlogement.lescrous.fr/tools/36/search",  # type:ignore
-            ignored_ids=[2755],
+            search_url="https://trouverunlogement.lescrous.fr/tools/47/search?minArea=13&occupationModes=alone&bounds=7.744174918598899_48.585802584562714_7.791038474507103_48.55916724786469&locationName=Strasbourg", 
+            ignored_ids=[],
+        ), # <--- CETTE VIRGULE EST TRÈS IMPORTANTE !
+        
+        # --- Lyon ---
+        UserConf(
+            conf_title="Lyon 2",
+            telegram_id=settings.MY_TELEGRAM_ID,
+            search_url="https://trouverunlogement.lescrous.fr/tools/47/search?minArea=13&occupationModes=alone&bounds=4.8146444960895804_45.75230931119491_4.861508051997784_45.72421413441327&locationName=Lyon", 
+            ignored_ids=[],
         )
     ]
 
@@ -48,7 +56,12 @@ def create_driver(headless: bool = True) -> WebDriver:
     chrome_options.add_argument("--no-sandbox")
 
     # Initialize the WebDriver with the configured options (Selenium gère le driver tout seul maintenant)
-    return webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Chrome(options=chrome_options)
+    
+    # LIGNE À RAJOUTER : On dit au bot d'attendre jusqu'à 10 secondes si la page est lente
+    driver.implicitly_wait(10)
+    return driver
+    
 
 
 if __name__ == "__main__":
