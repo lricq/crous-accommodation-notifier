@@ -10,7 +10,7 @@ settings = Settings()
 logger = logging.getLogger(__name__)
 
 class Authenticator:
-    """Class that handles the authentication to the CROUS website and returns a WebDriver object that is authenticated."""
+    """Class that handles the authentication to the CROUS website."""
 
     def __init__(self, email: str, password: str, delay: int = 4):
         self.email = email
@@ -25,35 +25,45 @@ class Authenticator:
         driver.get("https://trouverunlogement.lescrous.fr/mse/discovery/connect")
         sleep(self.delay)
 
+        # --- NOUVELLE ÉTAPE : LE PASSAGE DE L'AIGUILLAGE ---
+        logger.info("Recherche du bouton d'aiguillage (Dispatcher)...")
+        
+        # 1. On tente de cliquer sur les textes les plus courants du nouveau site
+        mots_cles = ["MesServices", "S'identifier", "Connexion", "Se connecter", "etudiant.gouv"]
+        for mot in mots_cles:
+            try:
+                bouton = driver.find_element(By.PARTIAL_LINK_TEXT, mot)
+                driver.execute_script("arguments[0].click();", bouton)
+                sleep(self.delay)
+                logger.info(f"Bouton contenant '{mot}' trouvé et cliqué !")
+                break # Le clic a marché, on sort de la boucle
+            except:
+                pass
+
+        # 2. On tente avec les noms de code techniques au cas où
         try:
-            logger.info("Checking for intermediate buttons...")
-            mse_connect_button = driver.find_element(By.CLASS_NAME, "loginapp-button")
-            driver.execute_script("arguments[0].click();", mse_connect_button)
-            sleep(self.delay)
-        except:
-            pass 
-            
-        try:
-            connexion_btn = driver.find_element(By.PARTIAL_LINK_TEXT, "Connexion")
-            driver.execute_script("arguments[0].click();", connexion_btn)
+            bouton_tech = driver.find_element(By.CSS_SELECTOR, ".loginapp-button, #idp-mse, button[value='mse'], a.fr-btn")
+            driver.execute_script("arguments[0].click();", bouton_tech)
             sleep(self.delay)
         except:
             pass
+        # ---------------------------------------------------
 
-        # --- LA MODIFICATION EST ICI ---
         logger.info("Inputting credentials")
         
-        # On cherche les cases par leur type (email, text, password) et non plus par leur nom
-        username_input = driver.find_element(By.CSS_SELECTOR, "input[type='email'], input[type='text']")
-        password_input = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
+        try:
+            username_input = driver.find_element(By.CSS_SELECTOR, "input[type='email'], input[type='text']")
+            password_input = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
 
-        username_input.send_keys(self.email)
-        password_input.send_keys(self.password)
+            username_input.send_keys(self.email)
+            password_input.send_keys(self.password)
 
-        logger.info("Submitting the form")
-        password_input.send_keys(Keys.RETURN)
-        sleep(self.delay)
-        # -------------------------------
+            logger.info("Submitting the form")
+            password_input.send_keys(Keys.RETURN)
+            sleep(self.delay)
+        except Exception as e:
+            logger.error("Échec : Le bot n'a pas réussi à passer l'aiguillage.")
+            raise e
 
         try:
             self._validate_rules(driver)
@@ -76,4 +86,3 @@ class Authenticator:
             sleep(self.delay)
         except:
             pass
-
